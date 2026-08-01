@@ -1,4 +1,4 @@
-# Rione Vibes — Kiss Nice / Nice is Vice
+# Rione Vibes — Kiss is Nice / Nice is Vice
 
 Mini-app matching per l'evento Shanghai Vice del Rione Shanghai — 28 agosto 2026.
 
