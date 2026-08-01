@@ -176,7 +176,7 @@ input,select,textarea,button{font-family:inherit;font-size:16px}
 <div style="margin-bottom:14px"><input class="inp" id="pin-input" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" style="font-weight:600;letter-spacing:6px;text-align:center" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="off"></div>
 <div id="login-err" style="background:#fef2f2;color:var(--r);padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;font-weight:500;display:none"></div>
 <button class="btn btn-dark" onclick="doLogin()" style="width:100%">ACCEDI</button>
-<p style="font-size:10px;color:#999;text-align:center;margin-top:16px">Admin → <b>ADMIN</b> / <b>0000</b></p>
+
 </div>
 <button class="privacy-link" onclick="$('privacy-modal').style.display='flex'" style="margin-top:16px">🔒 Informativa Privacy</button>
 </div>
@@ -264,7 +264,8 @@ async function completeRegistration(){
 // ═══ LOGIN ═══
 async function doLogin(){
   const code=$('code-input').value.trim().toUpperCase(),pin=$('pin-input').value;$('login-err').style.display='none';
-  if(code==='ADMIN'&&pin==='0000'){S={type:'admin'};enterApp();return}
+  // Admin login via RPC
+  if(code==='ADMIN'){try{const ar=await rpc('vibes_admin_login',{p_pin:pin});if(ar.error){err(ar.error);return}S={type:'admin',token:ar.token};enterApp();return}catch(e){err('Errore');return}}
   try{
     const res=await rpc('vibes_login',{p_code:code,p_pin:pin});
     if(res.error){err(res.error);return}
@@ -359,7 +360,7 @@ async function rA(){
   $('content').innerHTML=loading();
   try{
   if(aSub==='panoramica'){
-    const st=await rpc('vibes_admin_stats',{});const allM=await rpc('vibes_admin_matches',{});
+    const st=await rpc('vibes_admin_stats',{p_token:S.token});const allM=await rpc('vibes_admin_matches',{p_token:S.token});
     let h=`<h2 style="font-size:20px;font-weight:800;margin-bottom:14px">📊 Panoramica</h2>`;
     h+=`<div class="grid2" style="margin-bottom:14px"><div class="stat" style="border-left:4px solid var(--pink)"><p style="font-size:10px;color:#888;font-weight:600">💋 KISS NICE</p><p style="font-size:20px;font-weight:800;margin-top:3px">${st.vibes_players} iscritti · ${st.vibes_matches} match</p></div><div class="stat" style="border-left:4px solid var(--orange)"><p style="font-size:10px;color:#888;font-weight:600">🌴 NICE IS VICE</p><p style="font-size:20px;font-weight:800;margin-top:3px">${st.amici_players} iscritti · ${st.amici_matches} match</p></div></div>`;
     h+=`<h3 style="font-size:14px;font-weight:700;margin-bottom:8px">Tutti i match (${allM.length})</h3>`;
@@ -367,7 +368,7 @@ async function rA(){
     $('content').innerHTML=h;
   }else{
     let h=`<div class="subtabs"><button class="${aSub==='iscritti'?'active':''}" onclick="aSub='iscritti';selUserId=null;rA()">👥 Iscritti</button><button class="${aSub==='match'?'active':''}" onclick="aSub='match';selMatchId=null;rA()">💬 Match</button><button class="${aSub==='scelte'?'active':''}" onclick="aSub='scelte';rA()">👁 Scelte</button></div>`;
-    const pp=await rpc('vibes_admin_players',{p_pool:aPool});
+    const pp=await rpc('vibes_admin_players',{p_pool:aPool,p_token:S.token});
     const pool=POOLS[aPool];
 
     if(aSub==='iscritti'){
@@ -385,9 +386,9 @@ async function rA(){
         pp.forEach(p=>{h+=`<div class="card" onclick="selUserId='${p.id}';rA()" style="cursor:pointer;display:flex;align-items:center;gap:12px"><div class="avatar" style="width:44px;height:44px;${p.blocked?'opacity:.4':''}"><img src="${p.photo_url||''}"></div><div style="flex:1;min-width:0"><p style="font-size:14px;font-weight:700">${p.name} ${p.surname}${p.blocked?' <span class=\"tag tag-r\">SOSPESO</span>':''}</p><p style="font-size:11px;color:#888">${p.id} · età ${calcAge(p.birth)} · Sì: ${p.yes_count} · No: ${p.no_count}</p></div></div>`})}
     }
     else if(aSub==='match'){
-      const pm=await rpc('vibes_admin_matches',{p_pool:aPool});
+      const pm=await rpc('vibes_admin_matches',{p_pool:aPool,p_token:S.token});
       if(selMatchId){const m=pm.find(x=>x.match_id===selMatchId);if(!m){selMatchId=null;rA();return}
-        const msgs=await rpc('vibes_admin_messages',{p_match_id:selMatchId});
+        const msgs=await rpc('vibes_admin_messages',{p_match_id:selMatchId,p_token:S.token});
         h+=`<button onclick="selMatchId=null;rA()" style="background:none;border:none;cursor:pointer;color:#555;font-weight:600;font-size:13px;margin-bottom:10px;padding:0">← Lista match</button>`;
         h+=`<div class="card" style="border-radius:18px;padding:18px;margin-bottom:12px"><div style="display:flex;align-items:center;gap:8px;margin-bottom:8px"><div class="avatar" style="width:40px;height:40px"><img src="${m.a_photo||''}"></div><span style="font-size:16px;font-weight:800">${m.a_name} 💛 ${m.b_name}</span><div class="avatar" style="width:40px;height:40px"><img src="${m.b_photo||''}"></div></div><p style="font-size:12px;color:#888;margin-bottom:12px">${fdt(m.created_at)}</p>`;
         h+=`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn ${m.called_mic?'btn-g':'btn-outline'} btn-sm" onclick="admMic('${m.match_id}')">${m.called_mic?'✓ Chiamati':'🎤 Chiamati al microfono'}</button><button class="btn btn-r btn-sm" onclick="admToggle('${m.a_id}')">Sospendi ${m.a_name}</button><button class="btn btn-r btn-sm" onclick="admToggle('${m.b_id}')">Sospendi ${m.b_name}</button></div></div>`;
@@ -409,9 +410,9 @@ async function rA(){
   }catch(e){$('content').innerHTML=`<p style="color:var(--r);padding:20px">Errore: ${e.message}</p>`}
 }
 
-async function admToggle(uid){try{await rpc('vibes_admin_toggle_block',{p_id:uid});toast('Aggiornato');rA()}catch(e){toast('Errore','error')}}
-async function admMic(mid){try{await rpc('vibes_admin_toggle_mic',{p_match_id:mid});rA()}catch(e){toast('Errore','error')}}
-async function admSetPin(uid){const v=$('adm-pin')?.value;if(!v||v.length<4){toast('PIN troppo corto');return}try{await rpc('vibes_admin_set_pin',{p_id:uid,p_pin:v});toast('PIN aggiornato')}catch(e){toast('Errore','error')}}
+async function admToggle(uid){try{await rpc('vibes_admin_toggle_block',{p_id:uid,p_token:S.token});toast('Aggiornato');rA()}catch(e){toast('Errore','error')}}
+async function admMic(mid){try{await rpc('vibes_admin_toggle_mic',{p_match_id:mid,p_token:S.token});rA()}catch(e){toast('Errore','error')}}
+async function admSetPin(uid){const v=$('adm-pin')?.value;if(!v||v.length<4){toast('PIN troppo corto');return}try{await rpc('vibes_admin_set_pin',{p_id:uid,p_pin:v,p_token:S.token});toast('PIN aggiornato')}catch(e){toast('Errore','error')}}
 </script>
 </body>
 </html>
