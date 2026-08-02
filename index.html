@@ -56,6 +56,7 @@ input,select,textarea,button{font-family:inherit;font-size:16px}
 .bnav button.active{color:var(--magenta);font-weight:700}
 .bnav .dot{width:16px;height:3px;background:linear-gradient(90deg,var(--magenta),var(--pink));border-radius:2px;margin-top:2px;display:none}
 .bnav button.active .dot{display:block}
+.nav-badge{position:absolute;top:-5px;right:-11px;background:#ff2d55;color:#fff;font-size:9px;font-weight:800;min-width:15px;height:15px;line-height:15px;border-radius:8px;padding:0 3px;text-align:center;box-shadow:0 0 0 2px #fff}
 .notif-badge{position:absolute;top:4px;right:calc(50% - 18px);background:var(--r);color:#fff;font-size:9px;font-weight:800;min-width:16px;height:16px;border-radius:8px;display:flex;align-items:center;justify-content:center;padding:0 4px;animation:pop .3s ease}
 @keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.3)}100%{transform:scale(1)}}
 .atabs{background:#fff;border-bottom:1px solid #eee;display:flex;padding:0 8px;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:2px}
@@ -127,16 +128,21 @@ input,select,textarea,button{font-family:inherit;font-size:16px}
 <div class="modal-handle"></div>
 <h2 style="font-size:18px;font-weight:800;margin-bottom:4px">Crea il tuo profilo</h2>
 <p style="font-size:13px;color:#666;margin-bottom:16px">Scatta una foto e rispondi a 10 domande veloci.</p>
-<div class="photo-pick" id="reg-photo-pick" onclick="$('reg-photo-file').click()">📷</div>
-<input type="file" id="reg-photo-file" accept="image/*" capture="user" style="display:none" onchange="onPhotoPick(event)">
+<label class="photo-pick" id="reg-photo-pick" for="reg-photo-file">📷</label>
+<input type="file" id="reg-photo-file" accept="image/*" capture="user" onchange="onPhotoPick(event)" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none">
 <p style="text-align:center;font-size:11px;color:var(--r);font-weight:600;margin-bottom:14px">* Foto obbligatoria</p>
 <div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:#555">Nome *</label><input class="inp" id="reg-name" style="margin-top:4px" autocomplete="given-name"></div>
 <div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:#555">Cognome *</label><input class="inp" id="reg-surname" style="margin-top:4px" autocomplete="family-name"></div>
+<div style="margin-bottom:12px"><label style="font-size:12px;font-weight:600;color:#555">Cellulare *</label><input class="inp" id="reg-phone" type="tel" placeholder="333 1234567" style="margin-top:4px" autocomplete="tel"></div>
 <div style="margin-bottom:14px"><label style="font-size:12px;font-weight:600;color:#555">Data di nascita *</label><input class="inp" type="date" id="reg-birth" style="margin-top:4px" onchange="onBirthChange()"></div>
 <div id="reg-pool-flag"></div>
 <div id="reg-questions"></div>
 <div id="reg-consents" style="display:none">
 <hr style="margin:16px 0;border:none;border-top:1px solid #eee">
+<p style="font-size:12px;font-weight:600;color:#555;margin-bottom:6px">Scegli un PIN di accesso (4 cifre) *</p>
+<p style="font-size:11px;color:#888;margin-bottom:8px">Sceglilo tu così te lo ricordi. Ti servirà per accedere.</p>
+<div style="display:flex;gap:10px;margin-bottom:14px"><input class="inp" id="reg-pin" type="password" inputmode="numeric" maxlength="4" placeholder="PIN" style="font-weight:700;letter-spacing:4px;text-align:center" autocomplete="off"><input class="inp" id="reg-pin2" type="password" inputmode="numeric" maxlength="4" placeholder="Ripeti PIN" style="font-weight:700;letter-spacing:4px;text-align:center" autocomplete="off"></div>
+<hr style="margin:0 0 16px;border:none;border-top:1px solid #eee">
 <div class="checkbox-row"><input type="checkbox" id="rc-1"><label for="rc-1"><b>*</b> Dichiaro che i dati inseriti sono veritieri.</label></div>
 <div class="checkbox-row"><input type="checkbox" id="rc-2"><label for="rc-2"><b>*</b> Ho letto l'<a href="#" onclick="event.preventDefault();$('privacy-modal').style.display='flex'">informativa privacy</a> e acconsento.</label></div>
 <div id="reg-err" style="color:var(--r);font-size:13px;margin:8px 0;display:none;font-weight:600"></div>
@@ -159,6 +165,25 @@ input,select,textarea,button{font-family:inherit;font-size:16px}
 <p id="cred-pin" style="font-size:28px;font-weight:900;letter-spacing:6px;font-family:monospace;margin-top:4px"></p>
 </div>
 <button class="btn btn-main" onclick="closeModal('cred-modal');enterApp()">🚀 INIZIA A GIOCARE</button>
+</div></div>
+
+<!-- RECUPERA ACCESSO -->
+<div id="recover-modal" class="modal-bg" style="display:none">
+<div class="modal" style="text-align:center">
+<div class="modal-handle"></div>
+<div style="font-size:40px;margin-bottom:8px">📱</div>
+<h2 style="font-size:18px;font-weight:800;margin-bottom:6px">Recupera accesso</h2>
+<p style="font-size:13px;color:#666;margin-bottom:16px">Inserisci il cellulare usato in iscrizione.</p>
+<input class="inp" id="recover-phone" type="tel" placeholder="333 1234567" style="margin-bottom:12px;text-align:center;font-weight:600" autocomplete="tel">
+<div id="recover-err" style="color:var(--r);font-size:13px;margin-bottom:10px;display:none;font-weight:600"></div>
+<div id="recover-result" style="display:none;background:linear-gradient(135deg,var(--dpurple),var(--magenta));border-radius:16px;padding:18px;color:#fff;margin-bottom:14px">
+<p style="font-size:11px;opacity:.7;font-weight:600;letter-spacing:1px">CODICE</p>
+<p id="recover-id" style="font-size:24px;font-weight:900;letter-spacing:2px;font-family:monospace;margin:4px 0 10px"></p>
+<p style="font-size:11px;opacity:.7;font-weight:600;letter-spacing:1px">PIN</p>
+<p id="recover-pin" style="font-size:24px;font-weight:900;letter-spacing:6px;font-family:monospace;margin-top:4px"></p>
+</div>
+<button class="btn btn-main" id="recover-btn" onclick="doRecover()">🔎 Trova il mio profilo</button>
+<button class="btn btn-outline" onclick="closeModal('recover-modal')" style="width:100%;margin-top:8px;color:#888">Chiudi</button>
 </div></div>
 
 <!-- LOGIN -->
@@ -215,6 +240,7 @@ fill="#fff" fill-opacity=".95" stroke="none">
 <div style="margin-bottom:14px"><input class="inp" id="pin-input" type="password" maxlength="20" placeholder="PIN" style="font-weight:600;letter-spacing:4px;text-align:center" onkeydown="if(event.key==='Enter')doLogin()" autocomplete="off"></div>
 <div id="login-err" style="background:#fef2f2;color:var(--r);padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:12px;font-weight:500;display:none"></div>
 <button class="btn btn-dark" onclick="doLogin()" style="width:100%">ACCEDI</button>
+<p style="text-align:center;font-size:12px;margin-top:10px"><a href="#" onclick="event.preventDefault();openRecover()" style="color:var(--magenta);font-weight:700;text-decoration:none">Hai dimenticato il PIN? Recupera con il cellulare</a></p>
 
 </div>
 <button class="privacy-link" onclick="$('privacy-modal').style.display='flex'" style="margin-top:16px">🔒 Informativa Privacy</button>
@@ -260,7 +286,7 @@ const Q_AMICI=[
 {q:"Una parola per descriverti?",opts:["Simpatico/a 😄","Sportivo/a 🏅","Creativo/a 🎨","Avventuroso/a 🧭"]},
 ];
 
-let S=null,uTab='home',aPool='vibes',aSub='iscritti',selMatchId=null,selUserId=null,regPool=null,regAnswers={},regPhotoFile=null,msgChannel=null;
+let S=null,uTab='home',aPool='vibes',aSub='iscritti',selMatchId=null,selUserId=null,regPool=null,regAnswers={},regPhotoFile=null,msgChannel=null,unread=0,myMatchIds=new Set(),announcedMatches=new Set();
 const $=id=>document.getElementById(id);
 function imgErr(el){el.onerror=null;el.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='#f0e6ef'/><text x='50' y='64' font-size='46' text-anchor='middle'>\uD83D\uDC64</text></svg>");}
 const fdt=d=>new Date(d).toLocaleString("it-IT",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
@@ -270,17 +296,20 @@ function calcAge(b){const bd=new Date(b),t=new Date();let a=t.getFullYear()-bd.g
 function loading(){return '<div class="loading-full"><div class="spinner" style="border-color:#ccc;border-top-color:var(--magenta)"></div> Caricamento...</div>'}
 
 // ═══ REGISTRAZIONE ═══
-function openReg(){$('reg-modal').style.display='flex';$('reg-err').style.display='none';['reg-name','reg-surname','reg-birth'].forEach(id=>$(id).value='');['rc-1','rc-2'].forEach(id=>$(id).checked=false);regPool=null;regAnswers={};regPhotoFile=null;$('reg-photo-pick').innerHTML='📷';$('reg-pool-flag').innerHTML='';$('reg-questions').innerHTML='';$('reg-consents').style.display='none'}
+function openReg(){$('reg-modal').style.display='flex';$('reg-err').style.display='none';['reg-name','reg-surname','reg-birth','reg-phone','reg-pin','reg-pin2'].forEach(id=>$(id).value='');['rc-1','rc-2'].forEach(id=>$(id).checked=false);regPool=null;regAnswers={};regPhotoFile=null;$('reg-photo-pick').innerHTML='📷';$('reg-pool-flag').innerHTML='';$('reg-questions').innerHTML='';$('reg-consents').style.display='none'}
 function onPhotoPick(e){const f=e.target.files[0];if(!f)return;regPhotoFile=f;const r=new FileReader();r.onload=ev=>{$('reg-photo-pick').innerHTML=`<img src="${ev.target.result}" onerror="imgErr(this)">`};r.readAsDataURL(f)}
 function onBirthChange(){const v=$('reg-birth').value;if(!v){$('reg-pool-flag').innerHTML='';$('reg-questions').innerHTML='';$('reg-consents').style.display='none';return}const age=calcAge(v);if(age<0||age>110){$('reg-pool-flag').innerHTML=`<p style="color:var(--r)">Data non valida</p>`;return}regPool=age>=18?'vibes':'amici';const p=POOLS[regPool];$('reg-pool-flag').innerHTML=`<div class="pool-flag" style="background:${regPool==='vibes'?'#ec489918':'#f2874f18'};color:${regPool==='vibes'?'var(--magenta)':'var(--orange)'}">${p.emoji} Il tuo pool: <b>${p.label}</b></div>`;regAnswers={};const bank=regPool==='vibes'?Q_VIBES:Q_AMICI;$('reg-questions').innerHTML=bank.map((qb,qi)=>`<div class="q-block"><p>${qi+1}. ${qb.q}</p><div class="q-opts" id="qopts-${qi}">${qb.opts.map((o,oi)=>`<button type="button" class="q-opt" onclick="pickAnswer(${qi},${oi},this)">${o}</button>`).join('')}</div></div>`).join('');$('reg-consents').style.display='block'}
 function pickAnswer(qi,oi,el){const bank=regPool==='vibes'?Q_VIBES:Q_AMICI;regAnswers[qi]=bank[qi].opts[oi];const wrap=$('qopts-'+qi);[...wrap.children].forEach(c=>c.classList.remove('sel'));el.classList.add('sel')}
 
 async function completeRegistration(){
-  const n=$('reg-name').value.trim(),s=$('reg-surname').value.trim(),b=$('reg-birth').value;$('reg-err').style.display='none';
+  const n=$('reg-name').value.trim(),s=$('reg-surname').value.trim(),b=$('reg-birth').value,ph=$('reg-phone').value.trim(),pin=$('reg-pin').value,pin2=$('reg-pin2').value;$('reg-err').style.display='none';
   if(!regPhotoFile){$('reg-err').textContent='Scatta o carica una foto';$('reg-err').style.display='block';return}
   if(!n||!s||!b||!regPool){$('reg-err').textContent='Compila tutti i campi';$('reg-err').style.display='block';return}
+  if(!ph||ph.replace(/\D/g,'').length<8){$('reg-err').textContent='Inserisci un numero di cellulare valido';$('reg-err').style.display='block';return}
   const bank=regPool==='vibes'?Q_VIBES:Q_AMICI;
   if(Object.keys(regAnswers).length<bank.length){$('reg-err').textContent='Rispondi a tutte le domande';$('reg-err').style.display='block';return}
+  if(!/^[0-9]{4}$/.test(pin)){$('reg-err').textContent='Il PIN deve essere di 4 cifre';$('reg-err').style.display='block';return}
+  if(pin!==pin2){$('reg-err').textContent='I due PIN non coincidono';$('reg-err').style.display='block';return}
   if(!$('rc-1').checked||!$('rc-2').checked){$('reg-err').textContent='Accetta i consensi obbligatori';$('reg-err').style.display='block';return}
   const btn=$('reg-submit-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Creazione...';
   try{
@@ -293,10 +322,14 @@ async function completeRegistration(){
     const{data:urlData}=sb.storage.from('vibes-photos').getPublicUrl(fname);
     const photoUrl=urlData.publicUrl;
     // Registra
-    const res=await rpc('vibes_register',{p_name:n,p_surname:s,p_birth:b,p_photo_url:photoUrl,p_tags:tags});
+    const res=await rpc('vibes_register',{p_name:n,p_surname:s,p_birth:b,p_photo_url:photoUrl,p_tags:tags,p_phone:ph,p_pin:pin});
+    if(res&&res.error){
+      $('reg-err').textContent=res.error==='phone_duplicate'?'Questo numero è già registrato. Usa "Recupera accesso" nella schermata di login.':res.error;
+      $('reg-err').style.display='block';btn.disabled=false;btn.innerHTML='✨ GENERA IL MIO PROFILO';return;
+    }
     closeModal('reg-modal');
     $('cred-id').textContent=res.id;$('cred-pin').textContent=res.pin;$('cred-modal').style.display='flex';
-    S={type:'player',uid:res.id,pool:res.pool};
+    S={type:'player',uid:res.id,pool:res.pool,pin:res.pin};saveSession();
   }catch(e){$('reg-err').textContent='Errore: '+e.message;$('reg-err').style.display='block'}
   finally{btn.disabled=false;btn.innerHTML='✨ GENERA IL MIO PROFILO'}
 }
@@ -309,11 +342,11 @@ async function doLogin(){
   try{
     const res=await rpc('vibes_login',{p_code:code,p_pin:pin});
     if(res.error){err(res.error);return}
-    S={type:'player',uid:res.id,pool:res.pool,data:res};enterApp();
+    S={type:'player',uid:res.id,pool:res.pool,pin:pin,data:res};saveSession();enterApp();
   }catch(e){err('Errore di rete')}
 }
 function err(m){$('login-err').textContent=m;$('login-err').style.display='block'}
-function logout(){if(msgChannel){sb.removeChannel(msgChannel);msgChannel=null}S=null;uTab='home';aPool='vibes';aSub='iscritti';selMatchId=null;selUserId=null;$('login').style.display='flex';$('app').style.display='none';$('code-input').value='V-';$('pin-input').value=''}
+function logout(){if(msgChannel){sb.removeChannel(msgChannel);msgChannel=null}try{localStorage.removeItem('vibes_login')}catch(e){}unread=0;myMatchIds=new Set();announcedMatches=new Set();S=null;uTab='home';aPool='vibes';aSub='iscritti';selMatchId=null;selUserId=null;$('login').style.display='flex';$('app').style.display='none';$('code-input').value='V-';$('pin-input').value=''}
 
 function enterApp(){
   $('login').style.display='none';$('app').style.display='flex';
@@ -322,15 +355,32 @@ function enterApp(){
 }
 
 // ═══ REALTIME ═══
-function setupRealtime(){
+async function setupRealtime(){
   if(msgChannel)sb.removeChannel(msgChannel);
-  msgChannel=sb.channel('vibes-rt-'+S.uid).on('postgres_changes',{event:'INSERT',schema:'public',table:'vibes_messages'},payload=>{
-    if(payload.new.from_id!==S.uid){toast('💬 Nuovo messaggio!','msg');rUN()}
-  }).subscribe();
+  try{const mm=await rpc('vibes_my_matches',{p_id:S.uid});myMatchIds=new Set((mm||[]).map(m=>m.match_id))}catch(e){}
+  msgChannel=sb.channel('vibes-rt-'+S.uid)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vibes_messages'},payload=>{
+      const m=payload.new;
+      if(m.from_id===S.uid)return;
+      if(!myMatchIds.has(m.match_id))return;
+      if(uTab==='match'&&selMatchId===m.match_id){const c=$('chat-msgs');if(c){const b=document.createElement('div');b.className='bubble other';b.textContent=m.text;const t=document.createElement('div');t.className='bubble-time';t.textContent=fdt(m.created_at);b.appendChild(t);c.appendChild(b);c.scrollTop=c.scrollHeight}return}
+      unread++;toast('💬 Nuovo messaggio!','msg');rUN()
+    })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'vibes_matches'},payload=>{
+      const m=payload.new;
+      if(m.player_a!==S.uid&&m.player_b!==S.uid)return;
+      myMatchIds.add(m.id);
+      if(announcedMatches.has(m.id)){announcedMatches.delete(m.id);return}
+      if(!(uTab==='match'&&!selMatchId))unread++;
+      toast('🎉 Nuovo match!','match');rUN();
+      if(uTab==='match'&&!selMatchId)rU()
+    })
+    .subscribe();
 }
 
 // ═══ UTENTE ═══
-function rUN(){const ts=[{id:'home',l:'Home',e:'🏠'},{id:'scopri',l:'Scopri',e:'🔍'},{id:'match',l:'Match',e:'💬'},{id:'profilo',l:'Profilo',e:'👤'}];$('user-nav').innerHTML=ts.map(t=>`<button class="${uTab===t.id?'active':''}" onclick="uTab='${t.id}';selMatchId=null;rUN();rU()"><span style="font-size:17px">${t.e}</span><span>${t.l}</span><div class="dot"></div></button>`).join('')}
+function goTab(id){uTab=id;selMatchId=null;if(id==='match')unread=0;rUN();rU()}
+function rUN(){const ts=[{id:'home',l:'Home',e:'🏠'},{id:'scopri',l:'Scopri',e:'🔍'},{id:'match',l:'Match',e:'💬'},{id:'profilo',l:'Profilo',e:'👤'}];$('user-nav').innerHTML=ts.map(t=>{const bdg=(t.id==='match'&&unread>0)?`<span class="nav-badge">${unread>9?'9+':unread}</span>`:'';return `<button class="${uTab===t.id?'active':''}" onclick="goTab('${t.id}')"><span style="font-size:17px;position:relative;display:inline-block">${t.e}${bdg}</span><span>${t.l}</span><div class="dot"></div></button>`}).join('')}
 
 async function rU(){
   const pool=POOLS[S.pool];$('content').innerHTML=loading();
@@ -376,8 +426,10 @@ async function rU(){
   else if(uTab==='profilo'){
     const p=await rpc('vibes_get_profile',{p_id:S.uid});
     let h=`<h2 style="font-size:20px;font-weight:800;margin-bottom:16px">Profilo</h2>`;
-    h+=`<div class="card" style="border-radius:18px;padding:20px;text-align:center"><div class="avatar" style="width:72px;height:72px;margin:0 auto 10px"><img src="${p.photo_url||''}" onerror="imgErr(this)"></div><p style="font-size:18px;font-weight:700">${p.name} ${p.surname}</p><span class="tag ${pool.tagClass}" style="margin-top:6px;display:inline-block">${pool.emoji} ${pool.label}</span></div>`;
-    h+=`<div class="card" style="border-radius:16px;padding:16px"><div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:13px;color:#888">Codice</span><span style="font-size:13px;font-weight:700;font-family:monospace">${p.id}</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #f0f0f0"><span style="font-size:13px;color:#888">Iscritto</span><span style="font-size:13px;font-weight:600">${new Date(p.created_at).toLocaleDateString('it-IT')}</span></div></div>`;
+    h+=`<div class="card" style="border-radius:18px;padding:20px;text-align:center"><div style="position:relative;width:72px;height:72px;margin:0 auto 10px"><label class="avatar" for="profile-photo-file" style="width:72px;height:72px;cursor:pointer;display:flex"><img src="${p.photo_url||''}" onerror="imgErr(this)"></label><div style="position:absolute;bottom:-2px;right:-2px;background:var(--magenta);color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid #fff;pointer-events:none">📷</div></div><input type="file" id="profile-photo-file" accept="image/*" onchange="onProfilePhotoPick(event)" style="position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none"><p style="font-size:18px;font-weight:700">${p.name} ${p.surname}</p><p style="font-size:11px;color:#aaa;margin-top:2px">Tocca la foto per cambiarla</p><span class="tag ${pool.tagClass}" style="margin-top:6px;display:inline-block">${pool.emoji} ${pool.label}</span></div>`;
+    h+=`<div class="card" style="border-radius:16px;padding:16px"><div style="display:flex;justify-content:space-between;padding:8px 0"><span style="font-size:13px;color:#888">Codice</span><span style="font-size:13px;font-weight:700;font-family:monospace">${p.id}</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #f0f0f0"><span style="font-size:13px;color:#888">PIN</span><span style="font-size:13px;font-weight:700;font-family:monospace;letter-spacing:2px">${S.pin||'—'}</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid #f0f0f0"><span style="font-size:13px;color:#888">Iscritto</span><span style="font-size:13px;font-weight:600">${new Date(p.created_at).toLocaleDateString('it-IT')}</span></div></div>`;
+    h+=`<div class="card" style="border-radius:16px;padding:16px;margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><p style="font-size:13px;font-weight:700">Le tue risposte</p><span style="font-size:11px;color:#888">${p.edits_left>0?'Ti restano '+p.edits_left+' modifiche':'Modifiche esaurite'}</span></div><div class="swipe-tags">${(p.tags||[]).map(t=>`<span class="swipe-tag">${t}</span>`).join('')}</div>${p.edits_left>0?'<button class="btn btn-main btn-sm" style="width:100%;margin-top:12px" onclick="openEditAnswers()">✏️ Modifica risposte</button>':''}</div>`;
+    h+=`<p style="font-size:11px;color:#aaa;text-align:center;margin-top:12px">🔒 Accesso salvato su questo telefono</p>`;
     h+=`<button class="btn btn-outline" style="width:100%;margin-top:10px" onclick="$('privacy-modal').style.display='flex'">🔒 Informativa Privacy</button>`;
     h+=`<button class="btn btn-outline" style="width:100%;color:var(--r);border-color:var(--r);margin-top:8px" onclick="logout()">🚪 Esci</button>`;
     $('content').innerHTML=h;
@@ -387,7 +439,7 @@ async function rU(){
 
 async function doSwipe(tid,yes){
   try{const res=await rpc('vibes_swipe',{p_from:S.uid,p_to:tid,p_is_yes:yes});
-  if(res.match)toast('🎉 Hai un match con '+res.match_name+'!','match');
+  if(res.match){announcedMatches.add(res.match_id);myMatchIds.add(res.match_id);toast('🎉 Hai un match con '+res.match_name+'!','match')}
   else if(yes)toast('💛 Sì registrato');
   rU();}catch(e){toast('Errore','error')}
 }
@@ -417,7 +469,7 @@ async function rA(){
         h+=`<div class="card" style="border-radius:18px;padding:20px"><div style="display:flex;align-items:center;gap:14px;margin-bottom:14px"><div class="avatar" style="width:60px;height:60px"><img src="${p.photo_url||''}" onerror="imgErr(this)"></div><div><p style="font-size:17px;font-weight:800">${p.name} ${p.surname}${p.blocked?' <span class="tag tag-r">SOSPESO</span>':''}</p><p style="font-size:12px;color:#888">${p.id} · Età ${calcAge(p.birth)}</p></div></div>`;
         h+=`<p style="font-size:13px;font-weight:700;margin-bottom:6px">Risposte</p><div class="swipe-tags" style="margin-bottom:14px">${(p.tags||[]).map(t=>`<span class="swipe-tag">${t}</span>`).join('')}</div>`;
         h+=`<p style="font-size:13px;font-weight:700;margin-bottom:6px">🔑 PIN</p><div style="display:flex;gap:8px;margin-bottom:14px"><input class="inp" id="adm-pin" value="${p.pin}" maxlength="6" inputmode="numeric" style="flex:1;font-weight:700;letter-spacing:4px;text-align:center"><button class="btn btn-b btn-sm" onclick="admSetPin('${p.id}')">Salva</button></div>`;
-        h+=`<button class="btn ${p.blocked?'btn-g':'btn-r'} btn-sm" onclick="admToggle('${p.id}')">${p.blocked?'Riattiva':'Sospendi'}</button></div>`;
+        h+=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px"><button class="btn ${p.blocked?'btn-g':'btn-r'} btn-sm" onclick="admToggle('${p.id}')">${p.blocked?'Riattiva':'Sospendi'}</button><button class="btn btn-r btn-sm" onclick="admDelete('${p.id}')">🗑 Elimina</button></div></div>`;
         h+=`<h3 style="font-size:14px;font-weight:700;margin:12px 0 6px">Sì dati (${(p.yes_given||[]).length})</h3>`;
         (p.yes_given||[]).forEach(yid=>{const y=pp.find(x=>x.id===yid);h+=`<div class="card" style="padding:10px 14px;display:flex;align-items:center;gap:10px"><div class="avatar" style="width:32px;height:32px"><img src="${y?.photo_url||''}" onerror="imgErr(this)"></div><span style="font-size:13px;font-weight:600">${y?y.name+' '+y.surname:yid}</span></div>`});
         if(!(p.yes_given||[]).length)h+=`<p style="color:#999;font-size:12px">Nessuno</p>`;
@@ -453,6 +505,68 @@ async function rA(){
 async function admToggle(uid){try{await rpc('vibes_admin_toggle_block',{p_id:uid,p_token:S.token});toast('Aggiornato');rA()}catch(e){toast('Errore','error')}}
 async function admMic(mid){try{await rpc('vibes_admin_toggle_mic',{p_match_id:mid,p_token:S.token});rA()}catch(e){toast('Errore','error')}}
 async function admSetPin(uid){const v=$('adm-pin')?.value;if(!v||v.length<4){toast('PIN troppo corto');return}try{await rpc('vibes_admin_set_pin',{p_id:uid,p_pin:v,p_token:S.token});toast('PIN aggiornato')}catch(e){toast('Errore','error')}}
+async function admDelete(uid){
+  if(!confirm('Eliminare DEFINITIVAMENTE il profilo '+uid+'?\n\nVerranno cancellati anche i suoi swipe, match e messaggi. Azione irreversibile.'))return;
+  try{const r=await rpc('vibes_admin_delete_player',{p_id:uid,p_token:S.token});if(r&&r.error){toast(r.error,'error');return}toast('Profilo eliminato');selUserId=null;rA()}catch(e){toast('Errore','error')}
+}
+function saveSession(){try{if(S&&S.type==='player'&&S.uid&&S.pin)localStorage.setItem('vibes_login',JSON.stringify({code:S.uid,pin:S.pin}))}catch(e){}}
+function openRecover(){$('recover-modal').style.display='flex';$('recover-phone').value='';$('recover-err').style.display='none';$('recover-result').style.display='none';$('recover-btn').style.display='block'}
+async function onProfilePhotoPick(e){
+  const f=e.target.files[0];if(!f)return;
+  toast('Caricamento foto...');
+  try{
+    const ext=f.name.split('.').pop()||'jpg';
+    const fname=`${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+    const{error:upErr}=await sb.storage.from('vibes-photos').upload(fname,f,{contentType:f.type});
+    if(upErr)throw upErr;
+    const{data:urlData}=sb.storage.from('vibes-photos').getPublicUrl(fname);
+    const r=await rpc('vibes_update_photo',{p_id:S.uid,p_pin:S.pin,p_photo_url:urlData.publicUrl});
+    if(r&&r.error){toast(r.error,'error');return}
+    toast('Foto aggiornata!','match');rU();
+  }catch(e){toast('Errore durante il caricamento','error')}
+}
+async function doRecover(){
+  const ph=$('recover-phone').value.trim();$('recover-err').style.display='none';
+  if(!ph){$('recover-err').textContent='Inserisci il numero';$('recover-err').style.display='block';return}
+  try{
+    const r=await rpc('vibes_recover',{p_phone:ph});
+    if(r&&r.error){$('recover-err').textContent=r.error;$('recover-err').style.display='block';return}
+    $('recover-id').textContent=r.id;$('recover-pin').textContent=r.pin;
+    $('recover-result').style.display='block';$('recover-btn').style.display='none';
+    $('code-input').value=r.id;$('pin-input').value=r.pin;
+  }catch(e){$('recover-err').textContent='Errore di rete';$('recover-err').style.display='block'}
+}
+let editAnswers={};
+async function openEditAnswers(){
+  const p=await rpc('vibes_get_profile',{p_id:S.uid});
+  if((p.edits_left||0)<=0){toast('Hai esaurito le 5 modifiche','error');return}
+  const bank=S.pool==='vibes'?Q_VIBES:Q_AMICI;const cur=p.tags||[];
+  editAnswers={};bank.forEach((qb,qi)=>{const idx=qb.opts.indexOf(cur[qi]);if(idx>=0)editAnswers[qi]=qb.opts[idx]});
+  let h=`<button onclick="uTab='profilo';rU()" style="background:none;border:none;cursor:pointer;color:#555;font-weight:600;font-size:13px;margin-bottom:10px;padding:0">← Annulla</button>`;
+  h+=`<h2 style="font-size:20px;font-weight:800;margin-bottom:4px">Modifica risposte</h2>`;
+  h+=`<p style="font-size:13px;color:#666;margin-bottom:12px">Cambia le tue risposte per trovare più affinità. Ti restano <b>${p.edits_left}</b> modifiche.</p>`;
+  h+=bank.map((qb,qi)=>`<div class="q-block"><p>${qi+1}. ${qb.q}</p><div class="q-opts" id="eqopts-${qi}">${qb.opts.map((o,oi)=>`<button type="button" class="q-opt ${editAnswers[qi]===o?'sel':''}" onclick="pickEditAnswer(${qi},${oi},this)">${o}</button>`).join('')}</div></div>`).join('');
+  h+=`<button class="btn btn-main" style="width:100%;margin-top:8px" onclick="saveEditAnswers()">💾 Salva le risposte</button>`;
+  $('content').innerHTML=h;
+}
+function pickEditAnswer(qi,oi,el){const bank=S.pool==='vibes'?Q_VIBES:Q_AMICI;editAnswers[qi]=bank[qi].opts[oi];const w=$('eqopts-'+qi);[...w.children].forEach(c=>c.classList.remove('sel'));el.classList.add('sel')}
+async function saveEditAnswers(){
+  const bank=S.pool==='vibes'?Q_VIBES:Q_AMICI;
+  if(Object.keys(editAnswers).length<bank.length){toast('Rispondi a tutte le domande','error');return}
+  const tags=bank.map((_,qi)=>editAnswers[qi]);
+  try{const r=await rpc('vibes_update_tags',{p_id:S.uid,p_pin:S.pin,p_tags:tags});
+    if(r&&r.error){toast(r.error,'error');return}
+    toast('Risposte aggiornate! Ti restano '+r.edits_left+' modifiche','match');uTab='profilo';rU();
+  }catch(e){toast('Errore','error')}
+}
+(async function autoLogin(){
+  try{const raw=localStorage.getItem('vibes_login');if(!raw)return;
+    const s=JSON.parse(raw);if(!s||!s.code||!s.pin)return;
+    const res=await rpc('vibes_login',{p_code:s.code,p_pin:s.pin});
+    if(res&&!res.error){S={type:'player',uid:res.id,pool:res.pool,pin:s.pin,data:res};enterApp()}
+    else localStorage.removeItem('vibes_login');
+  }catch(e){}
+})();
 </script>
 </body>
 </html>
